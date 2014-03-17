@@ -9,7 +9,7 @@ try:
     import logging
 
     from celery import Celery
-except Exception, e:
+except ImportError, e:
     raise e
 
 celery = Celery()
