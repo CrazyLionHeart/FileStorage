@@ -15,7 +15,7 @@ try:
     import logging
 
     import hashlib
-except Exception, e:
+except ImportError, e:
     raise e
 
 import itertools
