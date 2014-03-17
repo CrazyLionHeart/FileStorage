@@ -4,10 +4,10 @@
 from __future__ import absolute_import
 
 try:
-    from JsonApp import make_json_app
+    from .JsonApp import make_json_app
     from celery.result import AsyncResult
-    from tasks import storage_list, storage_get, storage_put, storage_delete
-    from tasks import storage_info
+    from .tasks import storage_list, storage_get, storage_put, storage_delete
+    from .tasks import storage_info
     import json
 
     from base64 import b64decode
@@ -222,12 +222,3 @@ def get_result(task_name, task_id):
     else:
         raise Exception(u"""Не могу получить результат: функцию либо не
                         вызывали, либо результат протух""")
-
-
-if __name__ == '__main__':
-    try:
-        port = int(config["File_Storage"]["port"])
-        host = config['File_Storage']["hostname"]
-        app.run(host=host, port=port)
-    except KeyboardInterrupt:
-        pass
