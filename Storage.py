@@ -33,8 +33,17 @@ class Storage(object):
 
     def __init__(self, db=None):
 
+        logging.debug("Database: %s" % db)
+
         try:
             readPreference = ReadPreference.SECONDARY_PREFERRED
+
+            logging.debug("ReadPreference: %s" % readPreference)
+            logging.debug("Host: %s" % ",".join(host))
+            logging.debug("replicaSet: %s" % replicaSet)
+            logging.debug("writeConcern: %s" % writeConcern)
+            logging.debug("journal: %s" % journal)
+
             self.client = MongoReplicaSetClient(",".join(host),
                                                 replicaSet=replicaSet,
                                                 use_greenlets=True,
