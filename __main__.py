@@ -4,7 +4,7 @@
 from os import environ
 import json
 current_env = environ.get("APPLICATION_ENV", 'development')
-from app import app
+from .app import app
 
 with open('../../config/%s/config.%s.json' % (current_env, current_env)) as f:
     config = json.load(f)
