@@ -99,8 +99,7 @@ class Storage(object):
             raise e
 
     def put(self, file, content_type='application/octet-stream', metadata=None):
-        m = hashlib.sha512()
-        m.update(file)
+        m = hashlib.sha512(file)
         filename = m.hexdigest()
 
         if self.fs.exists(filename=filename):
