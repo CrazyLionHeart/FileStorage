@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 try:
     from .JsonApp import make_json_app
     from celery.result import AsyncResult
