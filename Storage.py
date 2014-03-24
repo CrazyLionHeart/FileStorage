@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
 from __future__ import division
 
 try:
@@ -21,7 +20,7 @@ except ImportError, e:
 import itertools
 import math
 
-from .config import *
+from config import *
 
 
 logging.basicConfig(level=logging.DEBUG,

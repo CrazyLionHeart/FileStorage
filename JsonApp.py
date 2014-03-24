@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
 from flask import Flask, jsonify
 from werkzeug.exceptions import default_exceptions
 from werkzeug.exceptions import HTTPException

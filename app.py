@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from .JsonApp import make_json_app
+    from JsonApp import make_json_app
     from celery.result import AsyncResult
-    from .tasks import storage_list, storage_get, storage_put, storage_delete
-    from .tasks import storage_info
+    from tasks import storage_list, storage_get, storage_put, storage_delete
+    from tasks import storage_info
     import json
 
     from base64 import b64decode
