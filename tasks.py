@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from .Storage import Storage
+    from Storage import Storage
 
     import logging
-
     from celery import Celery
 except ImportError, e:
     raise e
@@ -13,9 +12,7 @@ except ImportError, e:
 celery = Celery()
 celery.config_from_object('celeryconfig')
 
-logging.basicConfig(level=logging.DEBUG,
-                    format=u'''%(filename)s[LINE:%(lineno)d]# %(levelname)-8s
-                    [%(asctime)s]  %(message)s''')
+logging.basicConfig(level=logging.DEBUG)
 
 
 @celery.task
