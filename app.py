@@ -11,7 +11,6 @@ try:
     from base64 import b64decode
 
     import logging
-    from logging.config import dictConfig
 
     from flask import jsonify, request, Response, make_response, current_app
     from flask import url_for
@@ -25,12 +24,13 @@ except Exception, e:
 current_env = environ.get("APPLICATION_ENV", 'development')
 basePath = environ.get("basePath", './')
 
+logging.basicConfig(level=logging.DEBUG,
+                    format=u'''%(filename)s[LINE:%(lineno)d]# %(levelname)-8s
+                    [%(asctime)s]  %(message)s''')
+
 with open('%s/config/%s/config.%s.json' %
           (basePath, current_env, current_env)) as f:
     config = json.load(f)
-    dictConfig(config['loggingconfig'])
-
-logger = logging.getLogger('file_storage')
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -110,7 +110,7 @@ def list(database):
     sidx = request.args.get("sidx", None)
     sord = request.args.get("sord", None)
 
-    app.logger.debug(u"База даных: %s" % database)
+    logging.debug(u"База даных: %s" % database)
     res = storage_list.apply_async((database, page, rows, sidx, sord))
     result = "/status/%s/%s" % ('storage_list', res.task_id)
 
@@ -133,9 +133,9 @@ def upload(database):
             file = request.form.get('file')
             content_type = request.form.get('content_type')
 
-        logger.debug(metadata)
-        logger.debug(file)
-        logger.debug(content_type)
+        logging.debug(metadata)
+        logging.debug(file)
+        logging.debug(content_type)
 
         if content_type:
             if content_type == 'dataURL':
