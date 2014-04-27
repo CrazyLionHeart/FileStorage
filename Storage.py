@@ -53,7 +53,7 @@ class Storage(object):
             if db:
                 self.fs = GridFS(self.client[db])
 
-                self.client[db].ensure_index('filename', background=True)
+                self.fs.files.ensureIndex('filename', background=True)
             else:
                 raise Exception("DB not selected")
 
