@@ -11,21 +11,16 @@ try:
     from gridfs.errors import NoFile, FileExists
     from pymongo.errors import InvalidName
 
+    import itertools
+    import math
+
+    from FileStorage.config import config
+
     import logging
 
     import hashlib
 except ImportError, e:
     raise e
-
-import itertools
-import math
-
-from config import *
-
-
-logging.basicConfig(level=logging.DEBUG,
-                    format=u'''%(filename)s[LINE:%(lineno)d]# %(levelname)-8s
-                    [%(asctime)s]  %(message)s''')
 
 
 class Storage(object):
@@ -34,16 +29,15 @@ class Storage(object):
 
         logging.debug("Database: %s" % db)
 
+        mongodb = config['mongodb']
+        host = ",".join(mongodb['host'])
+        replicaSet = mongodb['replicaSet']
+        writeConcern = mongodb['writeConcern']
+        journal = mongodb['journal']
+        readPreference = ReadPreference.SECONDARY_PREFERRED
+
         try:
-            readPreference = ReadPreference.SECONDARY_PREFERRED
-
-            logging.debug("ReadPreference: %s" % readPreference)
-            logging.debug("Host: %s" % ",".join(host))
-            logging.debug("replicaSet: %s" % replicaSet)
-            logging.debug("writeConcern: %s" % writeConcern)
-            logging.debug("journal: %s" % journal)
-
-            self.client = MongoReplicaSetClient(",".join(host),
+            self.client = MongoReplicaSetClient(host,
                                                 replicaSet=replicaSet,
                                                 use_greenlets=True,
                                                 w=writeConcern,
@@ -51,7 +45,8 @@ class Storage(object):
                                                 read_preference=readPreference)
 
             if db:
-                self.db = getattr(self.client, db)
+                self.db = self.client[db]
+                self.db.read_preference = readPreference
                 self.fs = GridFS(self.db)
             else:
                 raise Exception("DB not selected")

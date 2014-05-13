@@ -1,0 +1,93 @@
+{
+    "mongodb": {
+        "connectTimeout": 300000,
+        "host": [
+            "192.168.1.231",
+            "192.168.1.232",
+            "192.168.1.233",
+            "192.168.1.234"
+        ],
+        "journal": true,
+        "replicaSet": "babypages",
+        "writeConcern": 2
+    },
+    "gunicorn": {
+        "hostname": "0.0.0.0",
+        "port": 8381,
+        "workers": 8,
+        "worker_class": "tornado",
+        "worker_connections": 2000,
+        "timeout": 30,
+        "keepalive": 2
+    },
+    "loggingconfig": {
+        "disable_existing_loggers": false,
+        "formatters": {
+            "simple": {
+                "datefmt": "%y %b %d, %H:%M:%S",
+                "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            }
+        },
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "simple",
+                "level": "DEBUG",
+                "stream": "ext://sys.stdout"
+            },
+            "sentry": {
+                "class": "raven.handlers.logging.SentryHandler",
+                "dsn": "http://ab22cadfc2bc47a1a50512e71c57b4ac:b0e930cbf76a4226a336b0b7bca534aa@sentry.bbp/8",
+                "level": "WARNING"
+            }
+        },
+        "loggers": {
+            "FileStorage": {
+                "handlers": [
+                    "console",
+                    "sentry"
+                ],
+                "level": "DEBUG",
+                "propagate": false
+            },
+            "celery": {
+                "level": "WARNING",
+                "handlers": ["sentry"],
+                "propagate": false,
+            },
+            "raven": {
+                "level": "DEBUG",
+                "handlers": ["console"],
+                "propagate": false,
+            }
+        },
+        "root": {
+            "level": "DEBUG",
+            "handlers": [
+                "console"
+            ]
+        },
+        "version": 1
+    },
+    "Raven": {
+        "public": "ab22cadfc2bc47a1a50512e71c57b4ac",
+        "private": "b0e930cbf76a4226a336b0b7bca534aa",
+        "host": "sentry.bbp/8"
+    },
+    "celery": {
+        "BROKER_URL": "amqp://guest:guest@localhost:5672//",
+        "CELERY_RESULT_BACKEND": "amqp://guest:guest@localhost:5672//",
+        "CELERY_IMPORTS": ["tasks"],
+        "CELERY_TASK_RESULT_EXPIRES": 300,
+        "CELERY_TIMEZONE": "Europe/Moscow",
+        "CELERY_ENABLE_UTC": true,
+        "CELERY_SEND_TASK_ERROR_EMAILS": true,
+        "CELERY_ACCEPT_CONTENT": ["pickle", "json", "msgpack", "yaml"],
+        "ADMINS": [
+            ["Administrators", "it_babypages_K52@babypages.ru"]
+        ],
+        "SERVER_EMAIL": "robot@babypages.ru",
+        "EMAIL_HOST": "localhost",
+        "EMAIL_PORT": 25
+    }
+}

@@ -2,79 +2,34 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from JsonApp import make_json_app
-    from celery.result import AsyncResult
-    from tasks import storage_list, storage_get, storage_put, storage_delete
-    from tasks import storage_info
-    import json
+    from gevent import monkey
+    monkey.patch_all()
+
+    from FileStorage.tasks import storage_list, storage_get, storage_put
+    from FileStorage.tasks import storage_info, storage_delete, celery
 
     from base64 import b64decode
 
     import logging
 
-    from flask import jsonify, request, Response, make_response, current_app
-    from flask import url_for
-    from datetime import timedelta
-    from functools import update_wrapper
+    from raven.contrib.flask import Sentry
 
-    from os import environ
+    from flask import jsonify, request, url_for, Response
+
+    from FileStorage.JsonApp import make_json_app, crossdomain
+    from FileStorage.config import config
+
 except Exception, e:
     raise e
 
-current_env = environ.get("APPLICATION_ENV", 'development')
-basePath = environ.get("basePath", './')
-
-logging.basicConfig(level=logging.DEBUG,
-                    format=u'''%(filename)s[LINE:%(lineno)d]# %(levelname)-8s
-                    [%(asctime)s]  %(message)s''')
-
-with open('%s/config/%s/config.%s.json' %
-          (basePath, current_env, current_env)) as f:
-    config = json.load(f)
-
-
-def crossdomain(origin=None, methods=None, headers=None,
-                max_age=21600, attach_to_all=True,
-                automatic_options=True):
-    if methods is not None:
-        methods = ', '.join(sorted(x.upper() for x in methods))
-    if headers is not None and not isinstance(headers, basestring):
-        headers = ', '.join(x.upper() for x in headers)
-    if not isinstance(origin, basestring):
-        origin = ', '.join(origin)
-    if isinstance(max_age, timedelta):
-        max_age = max_age.total_seconds()
-
-    def get_methods():
-        if methods is not None:
-            return methods
-
-        options_resp = current_app.make_default_options_response()
-        return options_resp.headers['allow']
-
-    def decorator(f):
-        def wrapped_function(*args, **kwargs):
-            if automatic_options and request.method == 'OPTIONS':
-                resp = current_app.make_default_options_response()
-            else:
-                resp = make_response(f(*args, **kwargs))
-            if not attach_to_all and request.method != 'OPTIONS':
-                return resp
-
-            h = resp.headers
-
-            h['Access-Control-Allow-Origin'] = origin
-            h['Access-Control-Allow-Methods'] = get_methods()
-            h['Access-Control-Max-Age'] = str(max_age)
-            if headers is not None:
-                h['Access-Control-Allow-Headers'] = headers
-            return resp
-
-        f.provide_automatic_options = False
-        return update_wrapper(wrapped_function, f)
-    return decorator
+dsn = "http://%s:%s@%s" % (config['Raven']['public'],
+                           config['Raven']['private'],
+                           config['Raven']['host'])
 
 app = make_json_app(__name__)
+
+app.config['SENTRY_DSN'] = dsn
+sentry = Sentry(app)
 
 
 @app.route('/')
@@ -196,7 +151,7 @@ def remove(database, file_name):
 def get_status(task_name, task_id):
     """Получаем результат асинхронной работы из Celery"""
 
-    result = AsyncResult(task_id)
+    result = celery.AsyncResult(task_id)
     if result:
         retval = "/result/%s/%s" % (task_name, task_id)
         return jsonify(results=retval, state=result.state)
@@ -210,7 +165,7 @@ def get_status(task_name, task_id):
 def get_result(task_name, task_id):
     """Получаем результат асинхронной работы из Celery"""
 
-    result = AsyncResult(task_id)
+    result = celery.AsyncResult(task_id)
     if result:
         if result.ready():
             retval = result.get()

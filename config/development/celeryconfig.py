@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-BROKER_URL = 'amqp://guest:guest@localhost:5672//'
-CELERY_RESULT_BACKEND = 'amqp://guest:guest@localhost:5672//'
-CELERY_IMPORTS = ("tasks", )
+BROKER_URL = 'redis://192.168.1.214/0'
+CELERY_RESULT_BACKEND = 'redis://192.168.1.214/0'
+CELERY_IMPORTS = ("FileStorage.tasks", )
 CELERY_TASK_RESULT_EXPIRES = 300
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_ENABLE_UTC = True
 CELERY_SEND_TASK_ERROR_EMAILS = True
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
+CELERY_CACHE_BACKEND_OPTIONS = {'binary': True,
+                                'behaviors': {'tcp_nodelay': True}}
 
 # Name and email addresses of recipients
 ADMINS = (

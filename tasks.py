@@ -2,17 +2,18 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from Storage import Storage
+    from FileStorage.Storage import Storage
+    from FileStorage.config import config
 
     import logging
     from celery import Celery
+
 except ImportError, e:
     raise e
 
 celery = Celery()
-celery.config_from_object('celeryconfig')
-
-logging.basicConfig(level=logging.DEBUG)
+celery.config_from_object(
+    'FileStorage.config.%s.celeryconfig' % config["APPLICATION_ENV"])
 
 
 @celery.task
@@ -62,4 +63,4 @@ def storage_info(filename, db):
     return Storage(db=db).info(filename)
 
 if __name__ == "__main__":
-    celery.start()
+    celery.worker_main()
