@@ -8,9 +8,20 @@ CELERY_TASK_RESULT_EXPIRES = 300
 CELERY_TIMEZONE = 'Europe/Moscow'
 CELERY_ENABLE_UTC = True
 CELERY_SEND_TASK_ERROR_EMAILS = True
-CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
-CELERY_CACHE_BACKEND_OPTIONS = {'binary': True,
-                                'behaviors': {'tcp_nodelay': True}}
+CELERY_ACCEPT_CONTENT = [
+    'pickle', 'json', 'msgpack', 'yaml'
+]
+CELERY_CACHE_BACKEND_OPTIONS = {
+    'binary': True,
+    'behaviors': {
+        'tcp_nodelay': True
+    }
+}
+BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': 3600,
+    'fanout_prefix': True,
+    'fanout_patterns': True
+}
 
 # Name and email addresses of recipients
 ADMINS = (
