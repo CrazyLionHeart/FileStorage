@@ -69,7 +69,11 @@ class Storage(object):
         total = int(math.ceil(len(all_data) / rows))
 
         for element in all_data:
-            info_data.append(self.info(element))
+            try:
+                info_data.append(self.info(element))
+            except NoFile:
+                # Файо еще не приехал или его не было - пропускаем
+                pass
 
         if sord == "desc":
             reverse = True
