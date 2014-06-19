@@ -107,7 +107,11 @@ class Storage(object):
             # Иначе загружаем файл и возвращаем инфу по нему
             self.fs.put(file, filename=filename,
                         content_type=content_type, metadata=metadata)
-        return self.info(filename)
+
+        try:
+            return self.info(filename)
+        except NoFile:
+            return None
 
     def delete(self, filename):
         try:
