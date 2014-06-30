@@ -5,12 +5,12 @@ try:
     from gevent import monkey
     monkey.patch_all()
 
-    from FileStorage.tasks import storage_list, storage_get, storage_put
-    from FileStorage.tasks import storage_info, storage_delete, celery
-
     from base64 import b64decode
 
     import logging
+    import math
+    import json
+    import re
 
     from raven.contrib.flask import Sentry
 
@@ -18,6 +18,7 @@ try:
 
     from FileStorage.JsonApp import make_json_app, crossdomain
     from FileStorage.config import config
+    from FileStorage.Storage import Storage
 
 except Exception, e:
     raise e
@@ -60,16 +61,122 @@ def example():
 def list(database):
     """Получаем список файлов в базе данных"""
 
+    logging.debug("arguments: %s" % request.args)
+
     page = int(request.args.get('page', 1))
     rows = int(request.args.get('rows', 30))
-    sidx = request.args.get("sidx", None)
-    sord = request.args.get("sord", None)
+    sidx = request.args.get("sidx")
+    sord = request.args.get("sord")
+    _search = request.args.get("_search")
+    searchField = request.args.get("searchField")
+    searchString = request.args.get("searchString")
+    searchOper = request.args.get("searchOper")
+    other_search = request.args.get("other_search")
+    full_props = request.args.get("full_props")
+    gridFilters = request.args.get("filters")
+    filtersMain = (request.args.get("filtersMain"))
+    showcols = request.args.get("showcols")
+    totalrows = int(request.args.get("totalrows", 1000))
+
+    if not filtersMain:
+        filtersMain = {"groupOp": "AND", "rules": []}
+    else:
+        filtersMain = json.loads(filtersMain)
+
+    if not gridFilters:
+        gridFilters = {"groupOp": "AND", "rules": []}
+    else:
+        gridFilters = json.loads(gridFilters)
+
+    if showcols:
+        showcols = showcols.split(',')
+        showcols = [elem for elem in showcols if elem.upper() != elem]
+
+    filters = {}
+    sort = None
+
+    info_data = []
+
+    if _search:
+        for rule in filtersMain['rules']:
+
+            if not filters.get(rule['field']):
+                filters[rule['field']] = list()
+
+            if rule['op'] == "bw":
+                filters[rule['field']].append({'$regex': '^%s' % rule['data']})
+            elif rule['op'] == "ew":
+                filters[rule['field']].append({'$regex': '%s^' % rule['data']})
+            elif rule['op'] == "eq":
+                filters[rule['field']].append(rule['data'])
+            elif rule['op'] == "ne":
+                filters[rule['field']].append({'$ne': rule['data']})
+            elif rule['op'] == "lt":
+                filters[rule['field']].append({'$lt': rule['data']})
+            elif rule['op'] == "le":
+                filters[rule['field']].append({'$lte': rule['data']})
+            elif rule['op'] == "gt":
+                filters[rule['field']].append({'$gt': rule['data']})
+            elif rule['op'] == "ge":
+                filters[rule['field']].append({'gte': rule['data']})
+            elif rule['op'] == "cn":
+                filters[rule['field']].append(
+                    {'$text': {'$search': rule['data']}})
+
+        if gridFilters.get('rules'):
+            for rule in gridFilters['rules']:
+
+                if rule['op'] == "bw":
+                    filters[rule['field']] = re.compile("^%s" % rule['data'])
+                elif rule['op'] == "ew":
+                    filters[rule['field']] = re.compile("%s$" % rule['data'])
+                elif rule['op'] == "eq":
+                    filters[rule['field']] = rule['data']
+                elif rule['op'] == "ne":
+                    filters[rule['field']] = {'$ne': rule['data']}
+                elif rule['op'] == "lt":
+                    filters[rule['field']] = {'$lt': rule['data']}
+                elif rule['op'] == "le":
+                    filters[rule['field']] = {'$lte': rule['data']}
+                elif rule['op'] == "gt":
+                    filters[rule['field']] = {'$gt': rule['data']}
+                elif rule['op'] == "ge":
+                    filters[rule['field']] = {'gte': rule['data']}
+                elif rule['op'] == "cn":
+                    filters[rule['field']] = re.compile("%s" % rule['data'])
+                elif rule['op'] == 'nc':
+                    filters[rule['field']] = {
+                        '$not': re.compile("%s" % rule['data'])}
+                elif rule['op'] == 'bn':
+                    filters[rule['field']] = {
+                        '$not': re.compile("^%s" % rule['data'])}
+                elif rule['op'] == 'en':
+                    filters[rule['field']] = {
+                        '$not': re.compile("%s$" % rule['data'])}
+    else:
+        filters = None
+
+    logging.debug("Filters: %s" % filters)
+
+    if sidx:
+        if sord:
+            sort = dict(key=sidx, direction=sord)
+
+    skip = int((page - 1) * rows)
 
     logging.debug(u"База даных: %s" % database)
-    res = storage_list.apply_async((database, page, rows, sidx, sord))
-    result = "/status/%s/%s" % ('storage_list', res.task_id)
 
-    return jsonify(results=result)
+    all_data = Storage(database).list(filters, rows, sort, skip)
+
+    for element in all_data:
+        info_data.append(Storage(database).info(element.filename))
+
+    count_data = Storage(database).count()
+
+    total = int(math.ceil(count_data / float(rows)))
+
+    return jsonify(dict(total=total, page=page, rows=info_data,
+                        records=count_data))
 
 
 @app.route('/files/<database>', methods=['PUT', 'POST'])
@@ -98,10 +205,8 @@ def upload(database):
                 content_type = 'image/png'
 
         if file:
-            res = storage_put.apply_async((file, content_type, metadata,
-                                          database))
-            result = "/status/%s/%s" % ('storage_put', res.task_id)
-            return jsonify(results=result)
+            res = Storage(database).put(file, content_type, metadata)
+            return jsonify(results=res)
         else:
             raise Exception("Нет файлов для добавления")
 
@@ -110,10 +215,9 @@ def upload(database):
         metadata = None
         content_type = request.content_type
 
-        res = storage_put.apply_async((file, content_type, metadata, database))
-        result = "/status/%s/%s" % ('storage_put', res.task_id)
+        res = Storage(database).put(file, content_type, metadata)
 
-        return jsonify(results=result)
+        return jsonify(results=res)
 
 
 @app.route('/info/<database>/<file_name>', methods=['GET'])
@@ -121,7 +225,7 @@ def upload(database):
 def info(database, file_name):
     """Получаем информацию по файлу из базы данных"""
 
-    res = storage_info.apply_async((file_name, database))
+    res = Storage(database).info(file_name)
     result = "/status/%s/%s" % ('storage_info', res.task_id)
     return jsonify(results=result)
 
@@ -131,9 +235,9 @@ def info(database, file_name):
 def get(database, file_name):
     """Получаем файл из базы данных"""
 
-    res = storage_get.apply_async((file_name, database))
-    result = "/status/%s/%s" % ('storage_get', res.task_id)
-    return jsonify(results=result)
+    res = Storage(database).get(file_name)
+    return Response(res['content'], direct_passthrough=True,
+                    mimetype=res['content_type'])
 
 
 @app.route('/file/<database>/<file_name>', methods=['DELETE'])
@@ -141,39 +245,5 @@ def get(database, file_name):
 def remove(database, file_name):
     """Удаляем файл из базы данных"""
 
-    res = storage_delete.apply_async((file_name, database))
-    result = "/status/%s/%s" % ('storage_delete', res.task_id)
-    return jsonify(results=result)
-
-
-@crossdomain(origin='*')
-@app.route("/status/<task_name>/<task_id>", methods=['GET'])
-def get_status(task_name, task_id):
-    """Получаем результат асинхронной работы из Celery"""
-
-    result = celery.AsyncResult(task_id)
-    if result:
-        retval = "/result/%s/%s" % (task_name, task_id)
-        return jsonify(results=retval, state=result.state)
-    else:
-        raise Exception(u"""Не могу получить результат: функцию либо не
-                        вызывали, либо результат протух""")
-
-
-@crossdomain(origin='*')
-@app.route("/result/<task_name>/<task_id>", methods=['GET'])
-def get_result(task_name, task_id):
-    """Получаем результат асинхронной работы из Celery"""
-
-    result = celery.AsyncResult(task_id)
-    if result:
-        if result.ready():
-            retval = result.get()
-            if task_name == 'storage_get':
-                return Response(retval['content'], direct_passthrough=True,
-                                mimetype=retval['content_type'])
-            else:
-                return jsonify(results=retval, state=result.state)
-    else:
-        raise Exception(u"""Не могу получить результат: функцию либо не
-                        вызывали, либо результат протух""")
+    res = Storage(database).delete(file_name)
+    return jsonify(results=res)
