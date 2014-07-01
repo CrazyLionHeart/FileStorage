@@ -175,8 +175,8 @@ def list(database):
 
     total = int(math.ceil(count_data / float(rows)))
 
-    return jsonify(dict(total=total, page=page, rows=info_data,
-                        records=count_data))
+    return jsonify(results=dict(total=total, page=page, rows=info_data,
+                                records=count_data))
 
 
 @app.route('/files/<database>', methods=['PUT', 'POST'])
