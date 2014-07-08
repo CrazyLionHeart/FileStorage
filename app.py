@@ -237,7 +237,6 @@ def get(database, file_name):
     """Получаем файл из базы данных"""
 
     res = Storage(database).get(file_name)
-    logging.debug(res)
     metadata = json.loads(res['metadata'])
 
     return send_file(io.BytesIO(res['content']), mimetype=res['content_type'],
