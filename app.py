@@ -15,7 +15,7 @@ try:
 
     from raven.contrib.flask import Sentry
 
-    from flask import jsonify, request, url_for, send_file
+    from flask import jsonify, request, url_for, Response
 
     from FileStorage.JsonApp import make_json_app, crossdomain
     from FileStorage.config import config
@@ -239,9 +239,13 @@ def get(database, file_name):
     res = Storage(database).get(file_name)
     metadata = json.loads(res['metadata'])
 
-    return send_file(io.BytesIO(res['content']), mimetype=res['content_type'],
-                     as_attachment=True,
-                     attachment_filename=metadata['filename'])
+    result = Response(io.BytesIO(res['content']), direct_passthrough=True,
+                      mimetype=res['content_type'])
+
+    result.headers.add("Content-Disposition", "attachment; filename*=UTF-8''%s" %
+                       metadata['filename'])
+
+    return result
 
 
 @app.route('/file/<database>/<file_name>', methods=['DELETE'])
