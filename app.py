@@ -11,10 +11,11 @@ try:
     import math
     import json
     import re
+    import io
 
     from raven.contrib.flask import Sentry
 
-    from flask import jsonify, request, url_for, Response
+    from flask import jsonify, request, url_for, send_file
 
     from FileStorage.JsonApp import make_json_app, crossdomain
     from FileStorage.config import config
@@ -236,8 +237,11 @@ def get(database, file_name):
     """Получаем файл из базы данных"""
 
     res = Storage(database).get(file_name)
-    return Response(res['content'], direct_passthrough=True,
-                    mimetype=res['content_type'])
+    metadata = json.loads(res['metadata'])
+
+    return send_file(io.BytesIO(res['content']), mimetype=res['content_type'],
+                     as_attachment=True,
+                     attachment_filename=metadata['file_name'])
 
 
 @app.route('/file/<database>/<file_name>', methods=['DELETE'])
