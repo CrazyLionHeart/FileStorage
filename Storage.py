@@ -123,7 +123,8 @@ class Storage(object):
 
                 result = self.fs.get_last_version(filename=filename)
                 return dict(content=result.read(),
-                            content_type=result.content_type)
+                            content_type=result.content_type,
+                            metadata=result.metadata)
 
             except NoFile:
                 time.sleep(pow(2, i))
