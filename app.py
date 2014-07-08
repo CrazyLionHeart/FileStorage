@@ -237,13 +237,11 @@ def get(database, file_name):
     """Получаем файл из базы данных"""
 
     res = Storage(database).get(file_name)
-    metadata = json.loads(res['metadata'])
 
     result = Response(io.BytesIO(res['content']), direct_passthrough=True,
                       mimetype=res['content_type'])
 
-    result.headers.add("Content-Disposition", "attachment; filename*=UTF-8''%s" %
-                       metadata['filename'])
+    result.headers.add("Content-Disposition", "attachment;")
 
     return result
 
