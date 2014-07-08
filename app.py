@@ -242,7 +242,7 @@ def get(database, file_name):
 
     return send_file(io.BytesIO(res['content']), mimetype=res['content_type'],
                      as_attachment=True,
-                     attachment_filename=metadata['file_name'])
+                     attachment_filename=metadata['filename'])
 
 
 @app.route('/file/<database>/<file_name>', methods=['DELETE'])
