@@ -107,7 +107,7 @@ def list(database):
             if rule['op'] == "bw":
                 filters[rule['field']].append({'$regex': '^%s' % rule['data']})
             elif rule['op'] == "ew":
-                filters[rule['field']].append({'$regex': '%s^' % rule['data']})
+                filters[rule['field']].append({'$regex': '%s$' % rule['data']})
             elif rule['op'] == "eq":
                 filters[rule['field']].append(rule['data'])
             elif rule['op'] == "ne":
@@ -227,8 +227,7 @@ def info(database, file_name):
     """Получаем информацию по файлу из базы данных"""
 
     res = Storage(database).info(file_name)
-    result = "/status/%s/%s" % ('storage_info', res.task_id)
-    return jsonify(results=result)
+    return jsonify(results=res)
 
 
 @app.route('/file/<database>/<file_name>', methods=['GET'])
