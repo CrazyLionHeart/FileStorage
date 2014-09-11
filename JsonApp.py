@@ -10,7 +10,7 @@ try:
     from werkzeug.exceptions import default_exceptions
     from werkzeug.exceptions import HTTPException
 
-except ImportError, e:
+except ImportError as e:
     raise e
 
 __all__ = ['make_json_app']
