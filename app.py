@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from gevent import monkey
-    monkey.patch_all()
-
     from base64 import b64decode
 
     import logging
@@ -21,7 +18,7 @@ try:
     from FileStorage.config import config
     from FileStorage.Storage import Storage
 
-except Exception, e:
+except Exception as e:
     raise e
 
 dsn = "http://%s:%s@%s" % (config['Raven']['public'],

@@ -9,7 +9,7 @@ try:
     sys.path.insert(0, path)
 
     from FileStorage.app import app
-except ImportError, e:
+except ImportError as e:
     raise e
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ try:
     from os import environ, path
     import json
     from logging.config import dictConfig
-except ImportError, e:
+except ImportError as e:
     raise e
 
 current_env = environ.get("APPLICATION_ENV", 'development')
@@ -18,7 +18,7 @@ try:
         config["APPLICATION_ENV"] = current_env
         dictConfig(config["loggingconfig"])
 
-except IOError, e:
+except IOError as e:
     with open(
         '%s/%s/sample_config.json' % (path.dirname(path.abspath(__file__)),
                                       current_env)) as f:
