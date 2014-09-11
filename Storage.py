@@ -152,7 +152,6 @@ class Storage(object):
                 raise Exception(e)
 
         db = client[self.current_db]
-        db.read_preference = self.readPreference
         self.fs = GridFS(db)
 
         result = self.fs.get_version(filename=filename)
