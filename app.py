@@ -185,7 +185,7 @@ def upload(database):
 
     if request.method == 'POST':
         fileObject = request.files.get('file')
-        metadata = request.form.get('metadata')
+        metadata = dict(request.form.get('metadata'))
 
         if fileObject:
             file = fileObject.read()
