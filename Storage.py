@@ -5,7 +5,7 @@ from __future__ import division
 
 try:
     from pymongo.mongo_replica_set_client import MongoReplicaSetClient
-    from pymongo.errors import ConnectionFailure
+    from pymongo.errors import ConnectionFailure, OperationFailure
     from pymongo import ASCENDING, DESCENDING
     from gridfs import GridFS
 
@@ -174,6 +174,10 @@ class Storage(object):
                 raise Exception(e)
 
         db = client[self.current_db]
-        self.fs = GridFS(db)
 
-        return self.fs.find().count()
+        try:
+            result = db.command('collstats', 'fs.files')
+            client.close()
+            return result['count']
+        except OperationFailure:
+            return 0
