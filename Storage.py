@@ -12,6 +12,7 @@ try:
     from FileStorage.config import config
 
     import logging
+    import json
 
     import hashlib
 except ImportError as e:
@@ -86,9 +87,15 @@ class Storage(object):
         self.fs = GridFS(db)
 
         result = self.fs.get_last_version(filename=filename)
+
+        if (isinstance(result.metadata, basestring)):
+            metadata = json.loads(result.metadata)
+        else:
+            metadata = result.metadata
+
         return dict(content=result.read(),
                     content_type=result.content_type,
-                    metadata=result.metadata,
+                    metadata=metadata,
                     filename=result.filename)
 
     def put(self, file, content_type='application/octet-stream', metadata=None):
@@ -155,9 +162,15 @@ class Storage(object):
         self.fs = GridFS(db)
 
         result = self.fs.get_version(filename=filename)
+
+        if (isinstance(result.metadata, basestring)):
+            metadata = json.loads(result.metadata)
+        else:
+            metadata = result.metadata
+
         return dict(
             filename=result.filename, content_type=result.content_type,
-            length=result.length, metadata=result.metadata,
+            length=result.length, metadata=metadata,
             upload_date=result.upload_date)
 
     def count(self):
