@@ -9,6 +9,7 @@ try:
     import json
     import re
     import io
+    import mimetypes
 
     from raven.contrib.flask import Sentry
 
@@ -189,6 +190,7 @@ def upload(database):
         if fileObject:
             file = fileObject.read()
             content_type = fileObject.mimetype
+            metadata['filename'] = fileObject.filename
         else:
             file = request.form.get('file')
             content_type = request.form.get('content_type')
@@ -237,7 +239,11 @@ def get(database, file_name):
     result = Response(io.BytesIO(res['content']), direct_passthrough=True,
                       mimetype=res['content_type'])
 
-    result.headers.add("Content-Disposition", "attachment;")
+    ext = mimetypes.guess_extension(res['content_type'], True)
+    filename = res.get('filename', '%s.%s' % (file_name, ext))
+
+    result.headers.add(
+        "Content-Disposition", "attachment; filename*=UTF-8''%s" % filename)
 
     return result
 
