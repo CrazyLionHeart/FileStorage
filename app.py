@@ -212,7 +212,7 @@ def upload(database):
 
     elif request.method == 'PUT':
         file = request.data
-        metadata = None
+        metadata = {}
         content_type = request.content_type
 
         res = Storage(database).put(file, content_type, metadata)
