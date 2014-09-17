@@ -9,6 +9,7 @@ try:
     import json
     import re
     import io
+    import mimetypes
 
     from raven.contrib.flask import Sentry
 
@@ -237,7 +238,10 @@ def get(database, file_name):
     result = Response(io.BytesIO(res['content']), direct_passthrough=True,
                       mimetype=res['content_type'])
 
-    result.headers.add("Content-Disposition", "attachment;")
+    ext = mimetypes.guess_extension(res['content_type'], True)
+
+    result.headers.add(
+        "Content-Disposition", "attachment; filename*=UTF-8''%s.%s" % (file_name, ext))
 
     return result
 
