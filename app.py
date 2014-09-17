@@ -240,9 +240,10 @@ def get(database, file_name):
                       mimetype=res['content_type'])
 
     ext = mimetypes.guess_extension(res['content_type'], True)
+    filename = res.get('filename', '%s.%s' % (file_name, ext))
 
     result.headers.add(
-        "Content-Disposition", "attachment; filename*=UTF-8''%s.%s" % (file_name, ext))
+        "Content-Disposition", "attachment; filename*=UTF-8''%s" % filename)
 
     return result
 
