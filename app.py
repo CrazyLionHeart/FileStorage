@@ -244,7 +244,7 @@ def get(database, file_name):
     try:
         encoded_filename = urllib.quote(filename)
     except AttributeError:
-        encoded_filename = urllib.parse.quote(filename)
+        encoded_filename = urllib.parse.quote(filename.encode('utf8'))
 
     result.headers.add(
         "Content-Disposition", "attachment; filename*=UTF-8''%s" % encoded_filename)
