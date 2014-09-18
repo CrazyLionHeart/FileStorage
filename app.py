@@ -242,7 +242,7 @@ def get(database, file_name):
     filename = res['metadata'].get('filename', '%s.%s' % (file_name, ext))
 
     try:
-        encoded_filename = urllib.quote(filename)
+        encoded_filename = urllib.quote(filename.encode('utf8'))
     except AttributeError:
         encoded_filename = urllib.parse.quote(filename.encode('utf8'))
 
