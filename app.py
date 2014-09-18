@@ -240,7 +240,7 @@ def get(database, file_name):
     filename = res['metadata'].get('filename', '%s.%s' % (file_name, ext))
 
     result.headers.add(
-        "Content-Disposition", "attachment; filename*=UTF-8''%s" % filename)
+        "Content-Disposition", "attachment; filename*=UTF-8''%s" % filename.decode('utf-8'))
 
     return result
 
