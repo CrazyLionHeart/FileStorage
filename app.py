@@ -19,6 +19,8 @@ try:
     from FileStorage.config import config
     from FileStorage.Storage import Storage
 
+    import urllib
+
 except Exception as e:
     raise e
 
@@ -239,8 +241,13 @@ def get(database, file_name):
 
     filename = res['metadata'].get('filename', '%s.%s' % (file_name, ext))
 
+    try:
+        encoded_filename = urllib.quote(filename)
+    except AttributeError:
+        encoded_filename = urllib.parse.quote(filename)
+
     result.headers.add(
-        "Content-Disposition", "attachment; filename*=UTF-8''%s" % filename.encode('utf-8'))
+        "Content-Disposition", "attachment; filename*=UTF-8''%s" % encoded_filename)
 
     return result
 
