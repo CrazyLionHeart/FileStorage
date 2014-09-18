@@ -195,10 +195,6 @@ def upload(database):
             file = request.form.get('file')
             content_type = request.form.get('content_type')
 
-        logging.debug(metadata)
-        logging.debug(file)
-        logging.debug(content_type)
-
         if content_type:
             if content_type == 'dataURL':
                 file = b64decode(file.split(',')[1])
