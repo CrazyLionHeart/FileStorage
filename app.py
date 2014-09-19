@@ -63,7 +63,9 @@ def example():
 def list(database):
     """Получаем список файлов в базе данных"""
 
-    logging.debug("arguments: %s" % request.args)
+    logging.debug("Args: %s" % request.args)
+    logging.debug("Files: %s" % request.files)
+    logging.debug("Forms: %s" % request.form)
 
     page = int(request.args.get('page', 1))
     rows = int(request.args.get('rows', 30))
@@ -186,6 +188,10 @@ def list(database):
 def upload(database):
     """Загружаем файл в базу данных"""
 
+    logging.debug("Args: %s" % request.args)
+    logging.debug("Files: %s" % request.files)
+    logging.debug("Forms: %s" % request.form)
+
     if request.method == 'POST':
         fileObject = request.files.get('file')
         metadata = json.loads(request.form.get('metadata', '{}'))
@@ -205,7 +211,7 @@ def upload(database):
         else:
             content_type = magic.from_buffer(file)
 
-        logging.debug("File: %s" % file)
+        logging.debug("File: %s" % unicode(file))
 
         if file:
             res = Storage(database).put(file, content_type, metadata)
@@ -228,6 +234,10 @@ def upload(database):
 def info(database, file_name):
     """Получаем информацию по файлу из базы данных"""
 
+    logging.debug("Args: %s" % request.args)
+    logging.debug("Files: %s" % request.files)
+    logging.debug("Forms: %s" % request.form)
+
     res = Storage(database).info(file_name)
     return jsonify(results=res)
 
@@ -236,6 +246,10 @@ def info(database, file_name):
 @crossdomain(origin='*')
 def get(database, file_name):
     """Получаем файл из базы данных"""
+
+    logging.debug("Args: %s" % request.args)
+    logging.debug("Files: %s" % request.files)
+    logging.debug("Forms: %s" % request.form)
 
     res = Storage(database).get(file_name)
 
@@ -265,6 +279,10 @@ def get(database, file_name):
 @crossdomain(origin='*')
 def remove(database, file_name):
     """Удаляем файл из базы данных"""
+
+    logging.debug("Args: %s" % request.args)
+    logging.debug("Files: %s" % request.files)
+    logging.debug("Forms: %s" % request.form)
 
     res = Storage(database).delete(file_name)
     return jsonify(results=res)
