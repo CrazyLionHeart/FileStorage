@@ -10,6 +10,7 @@ try:
     import re
     import io
     import mimetypes
+    import magic
 
     from raven.contrib.flask import Sentry
 
@@ -201,6 +202,8 @@ def upload(database):
             if content_type == 'dataURL':
                 file = b64decode(file.split(',')[1])
                 content_type = 'image/png'
+        else:
+            content_type = magic.from_buffer(file)
 
         if file:
             res = Storage(database).put(file, content_type, metadata)
@@ -237,7 +240,11 @@ def get(database, file_name):
     result = Response(io.BytesIO(res['content']), direct_passthrough=True,
                       mimetype=res['content_type'])
 
-    ext = mimetypes.guess_extension(res['content_type'], True)
+    if res['content_type']:
+        ext = mimetypes.guess_extension(res['content_type'], True)
+    else:
+        ext = ''
+
 
     filename = res['metadata'].get('filename', '%s.%s' % (file_name, ext))
 
