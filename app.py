@@ -4,7 +4,6 @@
 try:
     from base64 import b64decode
 
-    import logging
     import math
     import json
     import re
@@ -13,6 +12,7 @@ try:
     import magic
 
     from raven.contrib.flask import Sentry
+    from raven.middleware import Sentry as SentryMiddleware
 
     from flask import jsonify, request, url_for, Response
 
@@ -30,9 +30,10 @@ dsn = "http://%s:%s@%s" % (config['Raven']['public'],
                            config['Raven']['host'])
 
 app = make_json_app(__name__)
-
 app.config['SENTRY_DSN'] = dsn
-sentry = Sentry(app)
+sentry = Sentry(dsn=dsn, logging=True)
+sentry.init_app(app)
+app.wsgi = SentryMiddleware(app.wsgi_app, sentry.client)
 
 
 @app.route('/')
@@ -63,9 +64,9 @@ def example():
 def list(database):
     """Получаем список файлов в базе данных"""
 
-    logging.debug("Args: %s" % request.args)
-    logging.debug("Files: %s" % request.files)
-    logging.debug("Forms: %s" % request.form)
+    app.logger.debug("Args: %s" % request.args)
+    app.logger.debug("Files: %s" % request.files)
+    app.logger.debug("Forms: %s" % request.form)
 
     page = int(request.args.get('page', 1))
     rows = int(request.args.get('rows', 30))
@@ -160,7 +161,7 @@ def list(database):
     else:
         filters = None
 
-    logging.debug("Filters: %s" % filters)
+    app.logger.debug("Filters: %s" % filters)
 
     if sidx:
         if sord:
@@ -168,7 +169,7 @@ def list(database):
 
     skip = int((page - 1) * rows)
 
-    logging.debug(u"База даных: %s" % database)
+    app.logger.debug(u"База даных: %s" % database)
 
     all_data = Storage(database).list(filters, rows, sort, skip)
 
@@ -188,9 +189,9 @@ def list(database):
 def upload(database):
     """Загружаем файл в базу данных"""
 
-    logging.debug("Args: %s" % request.args)
-    logging.debug("Files: %s" % request.files)
-    logging.debug("Forms: %s" % request.form)
+    app.logger.debug("Args: %s" % request.args)
+    app.logger.debug("Files: %s" % request.files)
+    app.logger.debug("Forms: %s" % request.form)
 
     if request.method == 'POST':
         fileObject = request.files.get('file')
@@ -232,9 +233,9 @@ def upload(database):
 def info(database, file_name):
     """Получаем информацию по файлу из базы данных"""
 
-    logging.debug("Args: %s" % request.args)
-    logging.debug("Files: %s" % request.files)
-    logging.debug("Forms: %s" % request.form)
+    app.logger.debug("Args: %s" % request.args)
+    app.logger.debug("Files: %s" % request.files)
+    app.logger.debug("Forms: %s" % request.form)
 
     res = Storage(database).info(file_name)
     return jsonify(results=res)
@@ -245,9 +246,9 @@ def info(database, file_name):
 def get(database, file_name):
     """Получаем файл из базы данных"""
 
-    logging.debug("Args: %s" % request.args)
-    logging.debug("Files: %s" % request.files)
-    logging.debug("Forms: %s" % request.form)
+    app.logger.debug("Args: %s" % request.args)
+    app.logger.debug("Files: %s" % request.files)
+    app.logger.debug("Forms: %s" % request.form)
 
     res = Storage(database).get(file_name)
 
@@ -278,9 +279,9 @@ def get(database, file_name):
 def remove(database, file_name):
     """Удаляем файл из базы данных"""
 
-    logging.debug("Args: %s" % request.args)
-    logging.debug("Files: %s" % request.files)
-    logging.debug("Forms: %s" % request.form)
+    app.logger.debug("Args: %s" % request.args)
+    app.logger.debug("Files: %s" % request.files)
+    app.logger.debug("Forms: %s" % request.form)
 
     res = Storage(database).delete(file_name)
     return jsonify(results=res)
