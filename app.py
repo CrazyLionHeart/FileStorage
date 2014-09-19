@@ -205,6 +205,8 @@ def upload(database):
         else:
             content_type = magic.from_buffer(file)
 
+        logging.debug("File: %s" % file)
+
         if file:
             res = Storage(database).put(file, content_type, metadata)
             return jsonify(results=res)
