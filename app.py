@@ -194,7 +194,7 @@ def upload(database):
             content_type = fileObject.mimetype
             metadata['filename'] = fileObject.filename
         else:
-            file = request.form.get('file')
+            file = request.form.get('file').encode('utf-8')
             content_type = request.form.get('content_type')
 
         if content_type:
