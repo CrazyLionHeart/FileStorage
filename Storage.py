@@ -5,7 +5,7 @@ from __future__ import division
 
 try:
     from pymongo.mongo_replica_set_client import MongoReplicaSetClient
-    from pymongo.errors import ConnectionFailure, OperationFailure
+    from pymongo.errors import ConnectionFailure, OperationFailure, PyMongoError
     from pymongo import ASCENDING, DESCENDING
     from gridfs import GridFS
 
@@ -59,17 +59,21 @@ class Storage(object):
         if skip:
             kwargs['skip'] = skip
 
-        if filters:
-            results = self.fs.find(filters, **kwargs)
-        else:
-            results = self.fs.find(**kwargs)
-
-        if sort:
-            if sort['direction'] == 'asc':
-                results = results.sort(sort['key'], ASCENDING)
+        try:
+            if filters:
+                results = self.fs.find(filters, **kwargs)
             else:
-                results = results.sort(sort['key'], DESCENDING)
-        return results
+                results = self.fs.find(**kwargs)
+
+            if sort:
+                if sort['direction'] == 'asc':
+                    results = results.sort(sort['key'], ASCENDING)
+                else:
+                    results = results.sort(sort['key'], DESCENDING)
+            return results
+        except PyMongoError as e:
+            logging.exception(e)
+            raise Exception(e)
 
     def get(self, filename):
         try:
@@ -86,21 +90,24 @@ class Storage(object):
         db = client[self.current_db]
         self.fs = GridFS(db)
 
-        result = self.fs.get_last_version(filename=filename)
+        try:
+            result = self.fs.get_last_version(filename=filename)
 
-        if (isinstance(result.metadata, basestring)):
-            metadata = json.loads(result.metadata)
-        else:
-            metadata = result.metadata
+            if (isinstance(result.metadata, basestring)):
+                metadata = json.loads(result.metadata)
+            else:
+                metadata = result.metadata
 
-        return dict(content=result.read(),
-                    content_type=result.content_type,
-                    metadata=metadata,
-                    filename=result.filename)
+            return dict(content=result.read(),
+                        content_type=result.content_type,
+                        metadata=metadata,
+                        filename=result.filename)
+        except PyMongoError as e:
+            logging.exception(e)
+            raise Exception(e)
 
     def put(self, file, content_type='application/octet-stream', metadata=None):
-        m = hashlib.sha512(file)
-        filename = m.hexdigest()
+        filename = hashlib.sha512(file).hexdigest()
 
         try:
             client = MongoReplicaSetClient(self.host,
@@ -121,8 +128,12 @@ class Storage(object):
             pass
         else:
             # Иначе загружаем файл и возвращаем инфу по нему
-            self.fs.put(file, filename=filename,
-                        content_type=content_type, metadata=metadata)
+            try:
+                self.fs.put(file, filename=filename,
+                            content_type=content_type, metadata=metadata)
+            except PyMongoError as e:
+                logging.exception(e)
+                raise Exception(e)
 
         return self.info(filename)
 
@@ -142,9 +153,13 @@ class Storage(object):
         db = client[self.current_db]
         self.fs = GridFS(db)
 
-        result = self.fs.get_last_version(filename=filename)
-        self.fs.delete(result._id)
-        return filename
+        try:
+            result = self.fs.get_last_version(filename=filename)
+            self.fs.delete(result._id)
+            return filename
+        except PyMongoError as e:
+            logging.exception(e)
+            raise Exception(e)
 
     def info(self, filename):
         try:
@@ -161,17 +176,21 @@ class Storage(object):
         db = client[self.current_db]
         self.fs = GridFS(db)
 
-        result = self.fs.get_version(filename=filename)
+        try:
+            result = self.fs.get_version(filename=filename)
 
-        if (isinstance(result.metadata, basestring)):
-            metadata = json.loads(result.metadata)
-        else:
-            metadata = result.metadata
+            if (isinstance(result.metadata, basestring)):
+                metadata = json.loads(result.metadata)
+            else:
+                metadata = result.metadata
 
-        return dict(
-            filename=result.filename, content_type=result.content_type,
-            length=result.length, metadata=metadata,
-            upload_date=result.upload_date)
+            return dict(
+                filename=result.filename, content_type=result.content_type,
+                length=result.length, metadata=metadata,
+                upload_date=result.upload_date)
+        except PyMongoError as e:
+            logging.exception(e)
+            raise Exception(e)
 
     def count(self):
 
@@ -193,4 +212,5 @@ class Storage(object):
             client.close()
             return result['count']
         except OperationFailure:
+            logging.exception(e)
             return 0
