@@ -18,6 +18,8 @@ try:
 except ImportError as e:
     raise e
 
+logger = logging.getLogger(__name__)
+
 
 class Storage(object):
 
@@ -26,7 +28,7 @@ class Storage(object):
         if not db:
             raise Exception("DB not selected")
 
-        logging.debug("Database: %s" % db)
+        logger.debug("Database: %s" % db)
 
         self.mongodb = config['mongodb']
         self.host = ",".join(self.mongodb['host'])
@@ -45,7 +47,8 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logging.exception("Connection falure error reached: %r" % e)
+                logger.error(
+                    "Connection falure error reached: %r" % e, exc_info=True)
                 raise Exception(e)
 
         db = client[self.current_db]
@@ -72,7 +75,7 @@ class Storage(object):
                     results = results.sort(sort['key'], DESCENDING)
             return results
         except PyMongoError as e:
-            logging.exception(e)
+            logger.error(e)
             raise Exception(e)
 
     def get(self, filename):
@@ -84,7 +87,8 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logging.exception("Connection falure error reached: %r" % e)
+                logger.error(
+                    "Connection falure error reached: %r" % e, exc_info=True)
                 raise Exception(e)
 
         db = client[self.current_db]
@@ -103,7 +107,7 @@ class Storage(object):
                         metadata=metadata,
                         filename=result.filename)
         except PyMongoError as e:
-            logging.exception(e)
+            logger.error(e, exc_info=True)
             raise Exception(e)
 
     def put(self, file, content_type='application/octet-stream', metadata=None):
@@ -117,7 +121,8 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logging.exception("Connection falure error reached: %r" % e)
+                logger.error(
+                    "Connection falure error reached: %r" % e, exc_info=True)
                 raise Exception(e)
 
         db = client[self.current_db]
@@ -132,7 +137,7 @@ class Storage(object):
                 self.fs.put(file, filename=filename,
                             content_type=content_type, metadata=metadata)
             except PyMongoError as e:
-                logging.exception(e)
+                logger.error(e, exc_info=True)
                 raise Exception(e)
 
         return self.info(filename)
@@ -147,7 +152,8 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logging.exception("Connection falure error reached: %r" % e)
+                logger.error(
+                    "Connection falure error reached: %r" % e, exc_info=True)
                 raise Exception(e)
 
         db = client[self.current_db]
@@ -158,7 +164,7 @@ class Storage(object):
             self.fs.delete(result._id)
             return filename
         except PyMongoError as e:
-            logging.exception(e)
+            logger.error(e, exc_info=True)
             raise Exception(e)
 
     def info(self, filename):
@@ -170,7 +176,8 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logging.exception("Connection falure error reached: %r" % e)
+                logger.error(
+                    "Connection falure error reached: %r" % e, exc_info=True)
                 raise Exception(e)
 
         db = client[self.current_db]
@@ -189,7 +196,7 @@ class Storage(object):
                 length=result.length, metadata=metadata,
                 upload_date=result.upload_date)
         except PyMongoError as e:
-            logging.exception(e)
+            logger.error(e, exc_info=True)
             raise Exception(e)
 
     def count(self):
@@ -202,7 +209,8 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logging.exception("Connection falure error reached: %r" % e)
+                logger.error(
+                    "Connection falure error reached: %r" % e, exc_info=True)
                 raise Exception(e)
 
         db = client[self.current_db]
@@ -212,5 +220,5 @@ class Storage(object):
             client.close()
             return result['count']
         except OperationFailure:
-            logging.exception(e)
+            logger.error(e, exc_info=True)
             return 0
