@@ -20,7 +20,7 @@
         "formatters": {
             "simple": {
                 "datefmt": "%y %b %d, %H:%M:%S",
-                "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                "format": "[%(asctime)s][%(levelname)s] %(name)s %(filename)s:%(funcName)s:%(lineno)d | %(message)s"
             }
         },
         "handlers": {
@@ -37,13 +37,15 @@
             }
         },
         "loggers": {
-        },
-        "root": {
-            "level": "INFO",
-            "handlers": [
-                "console",
-                "sentry"
-            ]
+            "": {
+                "handlers": ["console", "sentry"],
+                "level": "DEBUG",
+                "propagate": false,
+            },
+            "FileStorage": {
+                "level": "DEBUG",
+                "propagate": true,
+            },
         },
         "version": 1
     },
