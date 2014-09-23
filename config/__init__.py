@@ -26,6 +26,6 @@ except IOError as e:
             "Конфиг не найден. Поместите в файл: %s/%s/config.%s.json" % (path.dirname(path.abspath(__file__)),
                                                                           current_env, current_env))
         print("Пример конфига: %s " % f.read())
-    exit(1)
+    raise Exception(e)
 except ValueError as e:
     raise Exception(e)

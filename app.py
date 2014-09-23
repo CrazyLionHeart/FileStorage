@@ -260,7 +260,6 @@ def get(database, file_name):
     else:
         ext = ''
 
-
     filename = res['metadata'].get('filename', '%s.%s' % (file_name, ext))
 
     try:
