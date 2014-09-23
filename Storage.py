@@ -47,9 +47,9 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logger.error(
-                    "Connection falure error reached: %r" % e, exc_info=True)
-                raise Exception(e)
+            logger.error("Connection falure error reached: %r" %
+                         e, exc_info=True)
+            raise Exception(e)
 
         db = client[self.current_db]
         self.fs = GridFS(db)
@@ -87,9 +87,9 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logger.error(
-                    "Connection falure error reached: %r" % e, exc_info=True)
-                raise Exception(e)
+            logger.error("Connection falure error reached: %r" %
+                         e, exc_info=True)
+            raise Exception(e)
 
         db = client[self.current_db]
         self.fs = GridFS(db)
@@ -121,9 +121,9 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logger.error(
-                    "Connection falure error reached: %r" % e, exc_info=True)
-                raise Exception(e)
+            logger.error("Connection falure error reached: %r" %
+                         e, exc_info=True)
+            raise Exception(e)
 
         db = client[self.current_db]
         self.fs = GridFS(db)
@@ -152,9 +152,9 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logger.error(
-                    "Connection falure error reached: %r" % e, exc_info=True)
-                raise Exception(e)
+            logger.error("Connection falure error reached: %r" %
+                         e, exc_info=True)
+            raise Exception(e)
 
         db = client[self.current_db]
         self.fs = GridFS(db)
@@ -176,9 +176,9 @@ class Storage(object):
                                            slave_okay=True,
                                            connectTimeoutMS=200)
         except ConnectionFailure as e:
-                logger.error(
-                    "Connection falure error reached: %r" % e, exc_info=True)
-                raise Exception(e)
+            logger.error("Connection falure error reached: %r" %
+                         e, exc_info=True)
+            raise Exception(e)
 
         db = client[self.current_db]
         self.fs = GridFS(db)
@@ -219,6 +219,6 @@ class Storage(object):
             result = db.command('collstats', 'fs.files')
             client.close()
             return result['count']
-        except OperationFailure:
+        except OperationFailure as e:
             logger.error(e, exc_info=True)
             return 0
