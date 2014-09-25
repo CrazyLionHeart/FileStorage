@@ -33,7 +33,7 @@
       "sentry": {
         "class": "raven.handlers.logging.SentryHandler",
         "dsn": "http://4853643a8d0b4288a578bf0b7fdc5edb:59e324a8a44f4b9b9d3b70d643c246af@sentry.bbp/12",
-        "level": "DEBUG"
+        "level": "WARN"
       }
     },
     "loggers": {
@@ -42,11 +42,11 @@
           "console",
           "sentry"
         ],
-        "level": "DEBUG",
+        "level": "INFO",
         "propagate": false
       },
       "FileStorage": {
-        "level": "DEBUG",
+        "level": "WARN",
         "propagate": true
       }
     },
