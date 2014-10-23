@@ -25,9 +25,7 @@ try:
 except Exception as e:
     raise e
 
-dsn = "http://%s:%s@%s" % (config['Raven']['public'],
-                           config['Raven']['private'],
-                           config['Raven']['host'])
+dsn = "http://%(public)s:%(private)s@%(host)s" % config['Raven']
 
 app = make_json_app(__name__)
 app.config['SENTRY_DSN'] = dsn
