@@ -8,7 +8,7 @@ try:
     from pymongo.errors import ConnectionFailure, OperationFailure
     from pymongo.errors import PyMongoError
     from pymongo import ASCENDING, DESCENDING
-    from pymongo.read_preference import ReadPreference
+    from pymongo.read_preferences import ReadPreference
     from gridfs import GridFS
 
     from FileStorage.config import config
