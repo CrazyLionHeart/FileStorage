@@ -85,6 +85,10 @@ class Storage(object):
             raise Exception(e)
 
     def get(self, filename):
+
+        if not filename:
+            raise Exception("No filename given: %r" % filename)
+
         try:
             client = MongoReplicaSetClient(self.host,
                                            replicaSet=self.replicaSet,
@@ -113,9 +117,13 @@ class Storage(object):
             self.log.error(e, exc_info=True)
             raise Exception(e)
 
-    def put(self, file, content_type='application/octet-stream',
+    def put(self, income_file, content_type='application/octet-stream',
             metadata=None):
-        filename = hashlib.sha512(file).hexdigest()
+
+        if not income_file:
+            raise Exception("No data: %r" % income_file)
+
+        filename = hashlib.sha512(income_file).hexdigest()
 
         try:
             client = MongoReplicaSetClient(self.host,
@@ -149,6 +157,9 @@ class Storage(object):
 
     def delete(self, filename):
 
+        if not filename:
+            raise Exception("No filename given: %r" % filename)
+
         try:
             client = MongoReplicaSetClient(self.host,
                                            replicaSet=self.replicaSet,
@@ -174,6 +185,10 @@ class Storage(object):
             raise Exception(e)
 
     def info(self, filename):
+
+        if not filename:
+            raise Exception("No filename given: %r" % filename)
+
         try:
             client = MongoReplicaSetClient(self.host,
                                            replicaSet=self.replicaSet,
