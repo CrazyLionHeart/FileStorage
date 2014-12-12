@@ -104,15 +104,11 @@ class Storage(object):
         try:
             result = self.fs.get_last_version(filename=filename)
 
-            if (isinstance(result.metadata, basestring)):
-                metadata = json.loads(result.metadata)
-            else:
-                metadata = result.metadata
+            info = self.info(filename=filename)
 
-            return dict(content=result.read(),
-                        content_type=result.content_type,
-                        metadata=metadata,
-                        filename=result.filename)
+            info['content'] = result.read()
+
+            return info
         except PyMongoError as e:
             self.log.error(e, exc_info=True)
             raise Exception(e)
