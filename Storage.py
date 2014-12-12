@@ -147,7 +147,7 @@ class Storage(object):
         else:
             # Иначе загружаем файл и возвращаем инфу по нему
             try:
-                self.fs.put(file, filename=filename,
+                self.fs.put(income_file, filename=filename,
                             content_type=content_type, metadata=metadata)
             except PyMongoError as e:
                 self.log.error(e, exc_info=True)
