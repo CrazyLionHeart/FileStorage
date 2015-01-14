@@ -12,7 +12,7 @@
     ],
     "journal": true,
     "replicaSet": "babypages",
-    "writeConcern": 2,
+    "writeConcern": 3,
     "max_autoreconnect": 5
   },
   "loggingconfig": {
