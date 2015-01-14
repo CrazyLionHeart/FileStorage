@@ -36,7 +36,7 @@ class Storage(object):
         self.writeConcern = self.mongodb['writeConcern']
         self.journal = self.mongodb['journal']
         self.current_db = db
-        self.r_p = ReadPreference.NEAREST
+        self.r_p = ReadPreference.PRIMARY
 
     @property
     def log(self):
