@@ -107,9 +107,11 @@ def list(database):
                 filters[rule['field']] = list()
 
             if rule['op'] == "bw":
-                filters[rule['field']].append({'$regex': '^%s' % rule['data']})
+                filters[rule['field']] = {
+                    '$regex': re.compile("^%s" % rule['data'], re.UNICODE)}
             elif rule['op'] == "ew":
-                filters[rule['field']].append({'$regex': '%s$' % rule['data']})
+                filters[rule['field']] = {
+                    '$regex': re.compile("%s$" % rule['data'], re.UNICODE)}
             elif rule['op'] == "eq":
                 filters[rule['field']].append(rule['data'])
             elif rule['op'] == "ne":
@@ -129,10 +131,15 @@ def list(database):
         if gridFilters.get('rules'):
             for rule in gridFilters['rules']:
 
+                if not filters.get(rule['field']):
+                    filters[rule['field']] = list()
+
                 if rule['op'] == "bw":
-                    filters[rule['field']] = re.compile("^%s" % rule['data'])
+                    filters[rule['field']] = {
+                        '$regex': re.compile("^%s" % rule['data'], re.UNICODE)}
                 elif rule['op'] == "ew":
-                    filters[rule['field']] = re.compile("%s$" % rule['data'])
+                    filters[rule['field']] = {
+                        '$regex': re.compile("%s$" % rule['data'], re.UNICODE)}
                 elif rule['op'] == "eq":
                     filters[rule['field']] = rule['data']
                 elif rule['op'] == "ne":
