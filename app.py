@@ -127,6 +127,15 @@ def list(database):
             elif rule['op'] == "cn":
                 filters[rule['field']].append(
                     {'$text': {'$search': rule['data']}})
+            elif rule['op'] == 'nc':
+                filters[rule['field']] = {
+                    '$not': re.compile("%s" % rule['data'], re.UNICODE)}
+            elif rule['op'] == 'bn':
+                filters[rule['field']] = {
+                    '$not': re.compile("^%s" % rule['data'], re.UNICODE)}
+            elif rule['op'] == 'en':
+                filters[rule['field']] = {
+                    '$not': re.compile("%s$" % rule['data'], re.UNICODE)}
 
         if gridFilters.get('rules'):
             for rule in gridFilters['rules']:
@@ -152,17 +161,18 @@ def list(database):
                     filters[rule['field']] = {'$gt': rule['data']}
                 elif rule['op'] == "ge":
                     filters[rule['field']] = {'gte': rule['data']}
-                elif rule['op'] == "cn":
-                    filters[rule['field']] = re.compile("%s" % rule['data'])
                 elif rule['op'] == 'nc':
                     filters[rule['field']] = {
-                        '$not': re.compile("%s" % rule['data'])}
+                        '$not': re.compile("%s" % rule['data'], re.UNICODE)}
                 elif rule['op'] == 'bn':
                     filters[rule['field']] = {
-                        '$not': re.compile("^%s" % rule['data'])}
+                        '$not': re.compile("^%s" % rule['data'], re.UNICODE)}
                 elif rule['op'] == 'en':
                     filters[rule['field']] = {
-                        '$not': re.compile("%s$" % rule['data'])}
+                        '$not': re.compile("%s$" % rule['data'], re.UNICODE)}
+                elif rule['op'] == "cn":
+                    filters[rule['field']].append(
+                        {'$text': {'$search': rule['data']}})
     else:
         filters = None
 
